@@ -1,0 +1,86 @@
+name: Build_OpenWrt
+
+on: 
+
+  workflow_dispatch:
+  #schedule:
+  #  - cron: '0 2 * * *' # Every day
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  CONFIG_FILE: '.config'
+  COMMIT_FILE: ${{ github.workspace }}/.commit
+  SCRIPTS_PATH: ${{ github.workspace }}/scripts
+  SSH_ACTIONS: false
+  UPLOAD_BIN_DIR: true
+  TZ: Asia/Shanghai
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Initialization environment
+      id: initial
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        git pull
+        sudo timedatectl set-timezone "$TZ"
+        echo "::set-output name=datetime::$(date +"%Y%m%d")"
+        sudo chmod a+x $SCRIPTS_PATH/init_env.sh && sudo -E $SCRIPTS_PATH/init_env.sh
+
+    - name: Clone source code
+      id: clone
+      run: |
+        git clone --depth 100 $REPO_URL -b $REPO_BRANCH openwrt
+        cd openwrt
+        [ -e $COMMIT_FILE ] && cat $COMMIT_FILE | xargs git reset --hard
+        COMMIT_ID=`git rev-parse --short HEAD | cut -c1-7`
+        echo "::set-output name=commitid::$COMMIT_ID"
+        echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git" >> ./feeds.conf.default
+
+    - name: Update & Install feeds
+      run: |
+        cd openwrt
+        ./scripts/feeds update -a && ./scripts/feeds install -a 
+
+    - name: Import external theme
+      run: |
+        cd openwrt
+        rm -rf package/lean/luci-theme-argon 
+        git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/lede/luci-theme-argon
+        git clone -b 18.06 https://github.com/kiddin9/luci-theme-edge.git package/lede/luci-theme-edge
+
+    - name: Customize Configuration
+      run: |
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        cd openwrt && make defconfig
+        sudo chmod a+x $SCRIPTS_PATH/mod_mwan3helper.sh && sudo -E $SCRIPTS_PATH/mod_mwan3helper.sh
+        
+    - name: Download package
+      run: |
+        cd openwrt
+        make -j$(nproc) download || make -j1 download || make -j1 download V=s
+
+    - name: Build
+      run: |
+        cd openwrt
+        echo -e "$(nproc) thread build."
+        make -j$(nproc) || make -j1 V=s
+        mkdir release
+        TARGET_PATH='bin/targets/x86/64'
+        cp $TARGET_PATH/*.buildinfo $TARGET_PATH/sha256sums $TARGET_PATH/openwrt-x86-64-generic-squashfs-combined-efi.img release/ 
+        cd release && zip Openwrt-x64-${{ steps.initial.outputs.datetime }}-roforest.zip *
+
+    - name : Upload artifact
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{ format('Openwrt-x64-{0}-{1}', steps.initial.outputs.datetime, steps.clone.outputs.commitid) }}
+        path: openwrt/release/Openwrt-x64-${{ steps.initial.outputs.datetime }}-roforest.zip
