@@ -3,6 +3,7 @@
 
 MWN3_PATH="$PWD/package/lean/luci-app-mwan3helper"
 cd $MWN3_PATH/root/etc/mwan3helper
+find . | grep -E 'all|c' | xargs rm
 cp $SCRIPTS_PATH/geniplist.sh geniplist.sh && chmod a+x geniplist.sh && ./geniplist.sh
 touch custom.txt
 sed -i -e '/cn[^c]/{s/.*/&\n&\n&\n&/g}' -e '/other/{s/.*/&\n&/g}' $MWN3_PATH/root/etc/init.d/mwan3helper
