@@ -17,7 +17,7 @@ Hereby thank  esirplayground  for his amazing job: https://github.com/esirplaygr
 **2. Default package setting**
   - Build for x86_64
   - image: squashfs only
-  - Package_include: aria_full; BaiduPCS-Web; diskman; jd-dailybonus; mwan3&helper; netdata; openvpn; passwall_xray_only; qemu-ga; rclone
+  - Package_include: aria_full; BaiduPCS-Web; diskman; jd-dailybonus; mwan3&helper; netdata; openvpn; passwall_xray_only; qemu-ga; rclone; HugePages
   - Package_exclude：adbyby; nlbwmon; strongswan; UnblockNeteaseMusic; wireguard; xlnetacc; zerotier
 
 **3. Rolling back to a certain previous commit**
