@@ -54,9 +54,10 @@ jobs:
     - name: Import external theme
       run: |
         cd openwrt
-        rm -rf package/lean/luci-theme-argon 
-        git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/lede/luci-theme-argon
-        git clone -b 18.06 https://github.com/kiddin9/luci-theme-edge.git package/lede/luci-theme-edge
+        rm -rf feeds/luci/themes/luci-theme-argon 
+        git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git feeds/luci/themes/luci-theme-argon
+        git clone -b 18.06 https://github.com/kiddin9/luci-theme-edge.git feeds/luci/themes/luci-theme-edge
+        ln -s feeds/luci/themes/luci-theme-edge package/feeds/luci/luci-theme-edge
 
     - name: Customize Configuration
       run: |
