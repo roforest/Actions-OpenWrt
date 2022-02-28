@@ -1,7 +1,7 @@
 # 1.Replace ip-list in luci-app-mwan3helper with https://github.com/gaoyifan/china-operator-ip
 # 2.Add jp,kr,tw iplist
 
-MWN3_PATH="$PWD/package/lean/luci-app-mwan3helper"
+MWN3_PATH="$PWD/feeds/luci/applications/luci-app-mwan3helper"
 cd $MWN3_PATH/root/etc/mwan3helper
 find . | grep -E 'all|c' | xargs rm
 cp $SCRIPTS_PATH/geniplist.sh geniplist.sh && chmod a+x geniplist.sh && ./geniplist.sh
