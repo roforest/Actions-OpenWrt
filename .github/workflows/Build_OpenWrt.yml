@@ -44,7 +44,8 @@ jobs:
         [ -e $COMMIT_FILE ] && cat $COMMIT_FILE | xargs git reset --hard
         COMMIT_ID=`git rev-parse --short HEAD | cut -c1-7`
         echo "::set-output name=commitid::$COMMIT_ID"
-        echo "src-git passwall https://github.com/xiaorouji/openwrt-passwall.git" >> ./feeds.conf.default
+        echo "src-git passwall_packages https://github.com/xiaorouji/openwrt-passwall.git;packages" >> ./feeds.conf.default
+        echo "src-git passwall_luci https://github.com/xiaorouji/openwrt-passwall.git;luci" >> ./feeds.conf.default
 
     - name: Update & Install feeds
       run: |
